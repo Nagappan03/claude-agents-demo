@@ -1,5 +1,15 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import { readFileSync, writeFileSync } from "fs";
+import { execSync } from "child_process";
+
+// Resolve claude binary path — works both locally and on CI
+const claudePath = (() => {
+    try {
+        return execSync("which claude", { encoding: "utf-8" }).trim();
+    } catch {
+        return "claude"; // fallback
+    }
+})();
 
 const sourceCode = readFileSync("./src/app.js", "utf-8");
 
@@ -38,6 +48,7 @@ async function runAgent(agentName, prompt) {
             agents,
             allowedTools: ["Read", "Write", "Edit", "Grep", "Glob", "Agent"],
             model: "claude-haiku-4-5-20251001",
+            pathToClaudeCodeExecutable: claudePath,
         },
     })) {
         if (message.type === "assistant" && message.message?.content) {
