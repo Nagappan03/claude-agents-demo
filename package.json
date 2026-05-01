@@ -1,0 +1,8 @@
+{
+  "name": "claude-agents-demo",
+  "version": "1.0.0",
+  "description": "Practice repo for Claude Code multi-agent setup",
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}
