@@ -10,12 +10,11 @@ on:
     branches: [main]
     paths:
       - 'src/**'
-      - '.github/workflows/**'
 
 jobs:
   ai-review:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,6 +25,9 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
       - name: Install dependencies
         run: npm install
 
@@ -34,12 +36,11 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Run the full pipeline and capture output + exit code
           node agents-sdk.mjs 2>&1 | tee review-output.txt
           echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
 
       - name: Upload review report
-        if: always()   # upload even if pipeline fails
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: review-report
@@ -53,7 +54,6 @@ jobs:
           if grep -qi "CRITICAL" review-output.txt; then
             echo "🔴 CRITICAL findings detected. Failing the build."
             echo ""
-            echo "--- Critical findings ---"
             grep -i "CRITICAL" review-output.txt
             exit 1
           else
