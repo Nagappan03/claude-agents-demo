@@ -1,5 +1,5 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 
 const sourceCode = readFileSync("./src/app.js", "utf-8");
 
@@ -95,6 +95,30 @@ The file is at src/app.js. Fix all reported issues and write the corrected file 
     console.log(fixReport);
 
     console.log("\n✅ All done. Check src/app.js for the rewritten file.");
+
+    // STEP 3 — Produce CI summary and fail if critical issues found
+    const hasCritical =
+        securityReport.toLowerCase().includes("critical") ||
+        qualityReport.toLowerCase().includes("critical");
+
+    const ciSummary = `
+CI REVIEW SUMMARY
+=================
+SECURITY REPORT:
+${securityReport}
+
+CODE QUALITY REPORT:
+${qualityReport}
+
+FIX CHANGELOG:
+${fixReport}
+
+${hasCritical ? "CRITICAL findings detected." : "No critical findings."}
+`;
+
+    writeFileSync("./review-output.txt", ciSummary);
+    console.log(hasCritical ? "\n🔴 CRITICAL findings found." : "\n✅ No critical findings.");
+    process.exit(hasCritical ? 1 : 0);  // fail CI if critical
 }
 
 main().catch(console.error);

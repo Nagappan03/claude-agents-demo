@@ -1,0 +1,59 @@
+name: AI Code Review
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'        # only trigger when src files change
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run AI agent pipeline
+        id: ai_review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Run the full pipeline and capture output + exit code
+          node agents-sdk.mjs 2>&1 | tee review-output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      - name: Upload review report
+        if: always()   # upload even if pipeline fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-report
+          path: |
+            review-output.txt
+            review-report.md
+          retention-days: 30
+
+      - name: Check for critical findings
+        run: |
+          if grep -qi "CRITICAL" review-output.txt; then
+            echo "🔴 CRITICAL findings detected. Failing the build."
+            echo ""
+            echo "--- Critical findings ---"
+            grep -i "CRITICAL" review-output.txt
+            exit 1
+          else
+            echo "✅ No critical findings. Build passes."
+          fi
