@@ -37,6 +37,7 @@ async function runAgent(agentName, prompt) {
         options: {
             agents,
             allowedTools: ["Read", "Write", "Edit", "Grep", "Glob", "Agent"],
+            model: "claude-haiku-4-5-20251001",
         },
     })) {
         if (message.type === "assistant" && message.message?.content) {

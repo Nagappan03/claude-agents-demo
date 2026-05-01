@@ -24,6 +24,7 @@ async function sendMessage(agentName, systemPrompt, userMessage) {
         options: {
             allowedTools: ["Read", "Write", "Glob", "Grep"],
             systemPrompt,
+            model: "claude-haiku-4-5-20251001",
         },
     })) {
         if (message.type === "assistant" && message.message?.content) {
