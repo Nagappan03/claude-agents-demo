@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Practice repo for Claude Code multi-agent setup",
   "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.126",
     "express": "^4.18.0"
   }
 }
