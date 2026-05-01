@@ -4,11 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - 'src/**'        # only trigger when src files change
+      - 'src/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [main]
     paths:
       - 'src/**'
+      - '.github/workflows/**'
 
 jobs:
   ai-review:
